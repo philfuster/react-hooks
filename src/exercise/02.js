@@ -14,9 +14,40 @@ function Greeting({initialName = '', initialToggle}) {
     initialValue: initialToggle,
   })
 
-  console.log(`toggle ${toggle}`)
-  function handleChange(event) {
+  const defaultDogState = {
+    name: 'Ryan',
+    breed: 'Puggle',
+    age: 5,
+  }
+
+  const [dogState, setDogState] = useLocalStorageState({
+    key: 'dog',
+    initialValue: defaultDogState,
+  })
+
+  function handleNameChange(event) {
     setName(event.target.value)
+  }
+
+  function handleDogNameChange(event) {
+    setDogState({
+      ...dogState,
+      name: event.target.value,
+    })
+  }
+
+  function handleDogBreedChange(event) {
+    setDogState({
+      ...dogState,
+      breed: event.target.value,
+    })
+  }
+
+  function handleDogAgeChange(event) {
+    setDogState({
+      ...dogState,
+      age: event.target.value,
+    })
   }
 
   function handleToggleClick() {
@@ -26,7 +57,7 @@ function Greeting({initialName = '', initialToggle}) {
     <div>
       <form onSubmit={event => event.preventDefault()}>
         <label htmlFor="name">Name: </label>
-        <input value={name} onChange={handleChange} id="name" />
+        <input value={name} onChange={handleNameChange} id="name" />
       </form>
       {name ? <strong>Hello {name}</strong> : 'Please type your name'}
       <div>
@@ -45,23 +76,78 @@ function Greeting({initialName = '', initialToggle}) {
           </span>
         )}
       </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          columnGap: '10px',
+        }}
+      >
+        <section
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <h3>Name</h3>
+          <input value={dogState.name} onChange={handleDogNameChange} />
+        </section>
+        <section
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <h3>Breed</h3>
+          <input value={dogState.breed} onChange={handleDogBreedChange} />
+        </section>
+        <section
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <h3>Age</h3>
+          <input
+            type="number"
+            value={dogState.age}
+            onChange={handleDogAgeChange}
+          />
+        </section>
+      </div>
     </div>
   )
 }
 
-function useLocalStorageState({key = '', initialValue}) {
+function useLocalStorageState({
+  key = '',
+  initialValue,
+  serialize = JSON.stringify,
+  deserialize = JSON.parse,
+}) {
   if (key.length < 1) {
     throw new Error(`invalid key for local storage entity`)
   }
   // check local storage
   const [value, setValue] = React.useState(() => {
     const storedValue = window.localStorage.getItem(key)
-    return storedValue !== null ? JSON.parse(storedValue) : initialValue
+    if (storedValue !== null) {
+      return deserialize(storedValue)
+    }
+    return typeof initialValue === 'function' ? initialValue() : initialValue
   })
 
+  const prevKeyRef = React.useRef(key)
+
   React.useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value))
-  }, [value, key])
+    const prevKey = prevKeyRef.current
+
+    if (prevKey !== key) {
+      window.localStorage.removeItem(prevKey)
+    }
+
+    window.localStorage.setItem(key, serialize(value))
+  }, [value, key, serialize])
 
   return [value, setValue]
 }
