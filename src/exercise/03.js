@@ -3,11 +3,16 @@
 
 import * as React from 'react'
 
-function Name({name, onNameChange}) {
+function Name() {
+  const [name, setName] = React.useState('Billy')
   return (
     <div>
       <label htmlFor="name">Name: </label>
-      <input id="name" value={name} onChange={onNameChange} />
+      <input
+        id="name"
+        value={name}
+        onChange={event => setName(event.target.value)}
+      />
     </div>
   )
 }
@@ -21,8 +26,8 @@ function FavoriteAnimal({animal, onAnimalChange}) {
   )
 }
 
-function Display({name, animal}) {
-  return <div>{`Hey ${name}, your favorite animal is: ${animal}!`}</div>
+function Display({animal}) {
+  return <div>{`Your favorite animal is: ${animal}!`}</div>
 }
 
 function App() {
@@ -30,12 +35,12 @@ function App() {
   function onAnimalChange(event) {
     setAnimal(event.target.value)
   }
-  const [name, setName] = React.useState('Billy')
+
   return (
     <form>
-      <Name name={name} onNameChange={event => setName(event.target.value)} />
+      <Name />
       <FavoriteAnimal animal={animal} onAnimalChange={onAnimalChange} />
-      <Display name={name} animal={animal} />
+      <Display animal={animal} />
     </form>
   )
 }
