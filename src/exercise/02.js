@@ -145,6 +145,7 @@ function useLocalStorageState({
     if (prevKey !== key) {
       window.localStorage.removeItem(prevKey)
     }
+    prevKeyRef.current = key
 
     window.localStorage.setItem(key, serialize(value))
   }, [value, key, serialize])
