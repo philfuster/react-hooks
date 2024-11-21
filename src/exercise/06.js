@@ -11,19 +11,34 @@ import {
 
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = React.useState(null)
+  const [error, setError] = React.useState(null)
+
   React.useEffect(() => {
     async function effect() {
       if (!Boolean(pokemonName)) {
         return
       }
       setPokemon(null)
-      const pokemon = await fetchPokemon(pokemonName)
-      setPokemon(pokemon)
+      setError(null)
+      try {
+        const pokemon = await fetchPokemon(pokemonName)
+        setPokemon(pokemon)
+      } catch (err) {
+        setError(err)
+      }
     }
     effect()
     return () => console.log('cleaning up!')
   }, [pokemonName])
 
+  if (error) {
+    return (
+      <div role="alert">
+        There was an error:{' '}
+        <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+      </div>
+    )
+  }
   if (!Boolean(pokemonName)) {
     return 'Submit a pokemon'
   }
