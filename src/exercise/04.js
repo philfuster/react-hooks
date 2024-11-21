@@ -7,7 +7,7 @@ import {useLocalStorageState} from '../utils'
 function Board({squares, onClick}) {
   function renderSquare(i) {
     return (
-      <button className="square" onClick={onClick}>
+      <button className="square" onClick={() => onClick(i)}>
         {squares[i]}
       </button>
     )
@@ -39,7 +39,6 @@ function Game() {
     'tic-tac-toe:history',
     () => [Array(9).fill(null)],
   )
-
   const [currentStep, setCurrentStep] = useLocalStorageState(
     'tic-tac-toe:step',
     () => 0,
@@ -62,18 +61,36 @@ function Game() {
     const squaresCopy = [...currentSquares]
     squaresCopy[square] = nextValue
 
-    const historyCopy = [...history]
+    // slice not inclusive add 1
     const nextStep = currentStep + 1
+    const historySlice = history.slice(0, nextStep)
+    const updatedHistory = [...historySlice, squaresCopy]
 
-    setCurrentStep(() => nextStep)
-    historyCopy[nextStep] = squaresCopy
-    setHistory(() => historyCopy)
+    setHistory(updatedHistory)
+    setCurrentStep(nextStep)
   }
 
   function restart() {
     setHistory([Array(9).fill(null)])
     setCurrentStep(0)
   }
+
+  const moves = history.map((stepSquares, step) => {
+    const isCurrent = step === currentStep
+    return (
+      <li>
+        <button
+          onClick={event => {
+            setCurrentStep(step)
+          }}
+          disabled={isCurrent}
+        >
+          Go to {step === 0 ? 'game start' : `move #${step}`}{' '}
+          {isCurrent ? '(current)' : null}
+        </button>
+      </li>
+    )
+  })
 
   return (
     <div className="game">
@@ -85,7 +102,7 @@ function Game() {
       </div>
       <div className="game-info">
         <div className="status">{status}</div>
-        <ol>{/* {moves} */}</ol>
+        <ol>{moves}</ol>
       </div>
     </div>
   )
